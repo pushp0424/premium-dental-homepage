@@ -1,0 +1,251 @@
+// Meridian Dental — data model
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  PATIENT
+  ADMIN
+  DOCTOR
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  VOID
+}
+
+enum PaymentStatus {
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum DocumentCategory {
+  INSURANCE
+  XRAY
+  LAB_RESULT
+  CONSENT_FORM
+  ID_CARD
+  OTHER
+}
+
+enum ReminderChannel {
+  EMAIL
+  SMS
+}
+
+enum ReminderStatus {
+  SCHEDULED
+  SENT
+  FAILED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  patient Patient?
+  doctor  Doctor?
+}
+
+model Patient {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName             String
+  lastName              String
+  phone                 String
+  dateOfBirth           DateTime
+  gender                String?
+  addressLine           String?
+  city                  String?
+  state                 String?
+  zip                   String?
+  insuranceProvider     String?
+  insuranceMemberId     String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  avatarColor           String   @default("#0B5FFF")
+  createdAt             DateTime @default(now())
+
+  appointments Appointment[]
+  invoices     Invoice[]
+  documents    Document[]
+  reminders    Reminder[]
+}
+
+model Doctor {
+  id               String   @id @default(cuid())
+  userId           String?  @unique
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  firstName        String
+  lastName         String
+  credentials      String
+  specialty        String
+  bio              String
+  photoColor       String   @default("#0B5FFF")
+  yearsExperience  Int
+  languages        String   @default("English")
+  createdAt        DateTime @default(now())
+
+  workingHours WorkingHour[]
+  appointments Appointment[]
+}
+
+model Location {
+  id          String  @id @default(cuid())
+  name        String
+  addressLine String
+  city        String
+  state       String
+  zip         String
+  phone       String
+  lat         Float
+  lng         Float
+  hoursNote   String
+  imageColor  String  @default("#0B5FFF")
+
+  workingHours WorkingHour[]
+  appointments Appointment[]
+}
+
+model WorkingHour {
+  id          String   @id @default(cuid())
+  doctorId    String
+  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  dayOfWeek   Int
+  startMinute Int
+  endMinute   Int
+
+  @@index([doctorId, dayOfWeek])
+  @@index([locationId, dayOfWeek])
+}
+
+model Service {
+  id              String  @id @default(cuid())
+  name            String
+  category        String
+  description     String
+  durationMinutes Int
+  price           Float
+  icon            String  @default("sparkles")
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id               String            @id @default(cuid())
+  confirmationCode String            @unique
+  patientId        String
+  patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId         String
+  doctor           Doctor            @relation(fields: [doctorId], references: [id])
+  locationId       String
+  location         Location          @relation(fields: [locationId], references: [id])
+  serviceId        String
+  service          Service           @relation(fields: [serviceId], references: [id])
+  startsAt         DateTime
+  endsAt           DateTime
+  status           AppointmentStatus @default(CONFIRMED)
+  reasonNote       String?
+  cancelReason     String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  invoice   Invoice?
+  reminders Reminder[]
+
+  @@index([doctorId, startsAt])
+  @@index([locationId, startsAt])
+  @@index([patientId, startsAt])
+}
+
+model Invoice {
+  id                  String        @id @default(cuid())
+  invoiceNumber       String        @unique
+  patientId           String
+  patient             Patient       @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId       String?       @unique
+  appointment         Appointment?  @relation(fields: [appointmentId], references: [id])
+  subtotal            Float
+  insuranceAdjustment Float         @default(0)
+  total                Float
+  status              InvoiceStatus @default(SENT)
+  dueDate             DateTime
+  createdAt           DateTime      @default(now())
+
+  items    InvoiceItem[]
+  payments Payment[]
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  amount      Float
+  quantity    Int     @default(1)
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  invoiceId String
+  invoice   Invoice       @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  amount    Float
+  method    String
+  status    PaymentStatus @default(SUCCEEDED)
+  createdAt DateTime      @default(now())
+}
+
+model Document {
+  id             String           @id @default(cuid())
+  patientId      String
+  patient        Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  fileName       String
+  filePath       String
+  fileType       String
+  fileSize       Int
+  category       DocumentCategory @default(OTHER)
+  uploadedByRole Role             @default(PATIENT)
+  uploadedAt     DateTime         @default(now())
+}
+
+model Reminder {
+  id            String           @id @default(cuid())
+  patientId     String
+  patient       Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  appointmentId String?
+  appointment   Appointment?     @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  channel       ReminderChannel
+  message       String
+  scheduledFor  DateTime
+  status        ReminderStatus   @default(SCHEDULED)
+  sentAt        DateTime?
+  createdAt     DateTime         @default(now())
+
+  @@index([patientId, scheduledFor])
+}
