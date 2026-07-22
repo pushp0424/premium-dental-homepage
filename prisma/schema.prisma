@@ -226,7 +226,7 @@ model Document {
   patientId      String
   patient        Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
   fileName       String
-  filePath       String
+  content        Bytes
   fileType       String
   fileSize       Int
   category       DocumentCategory @default(OTHER)

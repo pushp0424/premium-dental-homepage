@@ -67,8 +67,32 @@ src/
   appointments (`src/lib/availability.ts`) — nothing is precomputed or faked.
 - **Payments** are a mock form (Luhn-validated card number, no real gateway) that
   marks an invoice paid — there is no real payment processor involved.
-- **Documents** are stored on local disk under `storage/uploads/` (gitignored) and
-  served back through an authenticated route handler.
+- **Documents** are stored as `Bytes` blobs directly in the `Document` table (not
+  local disk) and served back through an authenticated route handler — this is
+  what makes uploads work on serverless hosts with no persistent filesystem.
 - **Location "find nearest me"** uses the browser Geolocation API and a haversine
   distance calculation against each location's seeded lat/lng — no maps API key
   is required; map previews use a keyless Google Maps embed URL.
+
+## Deploying (Vercel + Turso)
+
+Local dev defaults to a SQLite file, but that doesn't work on serverless hosts
+(read-only filesystem, no persistent storage). For a live deployment:
+
+1. Create a free database at [turso.tech](https://turso.tech) and grab its
+   connection URL + an auth token.
+2. Set `DATABASE_URL` (both locally in `.env` and in your host's environment
+   variables) to `libsql://your-db.turso.io?authToken=YOUR_TOKEN` — the token
+   embedded as a query param works for both the app's runtime client and any
+   one-off scripts, with nothing else to configure.
+3. **Prisma's own CLI (`migrate deploy`/`db push`) cannot connect to `libsql://`
+   URLs** — its schema engine only recognizes `file:` and a handful of native
+   database schemes. Apply `prisma/turso-init.sql` directly against the Turso
+   database instead (via the Turso dashboard's SQL Shell, or `turso db shell`)
+   to create the tables.
+4. Run `npx prisma db seed` locally once — since seeding goes through the
+   app's own Prisma Client (the JS driver adapter), it connects to `libsql://`
+   fine and works normally.
+5. If the schema ever changes again: update `schema.prisma`, generate a
+   migration file the usual way for the migration history, but hand-write the
+   equivalent SQL and run it against Turso directly (same reason as step 3).

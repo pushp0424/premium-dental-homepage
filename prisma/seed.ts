@@ -446,10 +446,6 @@ async function main() {
   }
 
   const docCategories = ["INSURANCE", "XRAY", "CONSENT_FORM", "ID_CARD"] as const;
-  const fs = await import("node:fs");
-  const path = await import("node:path");
-  const uploadDir = path.join(process.cwd(), "storage", "uploads", "seed");
-  fs.mkdirSync(uploadDir, { recursive: true });
 
   for (const patient of patients) {
     if (Math.random() > 0.55) continue;
@@ -462,17 +458,15 @@ async function main() {
         CONSENT_FORM: "Treatment-Consent-Form.txt",
         ID_CARD: "Photo-ID.txt",
       }[category];
-      const fileId = faker.string.uuid();
-      const filePath = `storage/uploads/seed/${fileId}.txt`;
-      const content = `Meridian Dental — demo placeholder document\nCategory: ${category}\nPatient: ${patient.firstName} ${patient.lastName}\nGenerated for demo purposes only.`;
-      fs.writeFileSync(path.join(process.cwd(), filePath), content, "utf-8");
+      const textContent = `Meridian Dental — demo placeholder document\nCategory: ${category}\nPatient: ${patient.firstName} ${patient.lastName}\nGenerated for demo purposes only.`;
+      const content = Buffer.from(textContent, "utf-8");
       await prisma.document.create({
         data: {
           patientId: patient.id,
           fileName,
-          filePath,
+          content,
           fileType: "text/plain",
-          fileSize: content.length,
+          fileSize: content.byteLength,
           category,
           uploadedByRole: "PATIENT",
           uploadedAt: faker.date.recent({ days: 120 }),

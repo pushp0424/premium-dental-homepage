@@ -1,8 +1,5 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
-import { mkdir, writeFile, unlink } from "node:fs/promises";
-import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -28,22 +25,13 @@ export async function uploadDocumentAction(_prevState: UploadState, formData: Fo
   if (file.size > MAX_SIZE) return { error: "File is too large. Max size is 10MB." };
   if (!ALLOWED_TYPES.has(file.type)) return { error: "Unsupported file type. Please upload a PDF, image, or text file." };
 
-  const patientDir = path.join(process.cwd(), "storage", "uploads", session.patientId);
-  await mkdir(patientDir, { recursive: true });
-
-  const ext = path.extname(file.name) || "";
-  const fileId = randomUUID();
-  const diskFileName = `${fileId}${ext}`;
-  const filePath = path.join("storage", "uploads", session.patientId, diskFileName);
-
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(process.cwd(), filePath), buffer);
+  const content = Buffer.from(await file.arrayBuffer());
 
   await prisma.document.create({
     data: {
       patientId: session.patientId,
       fileName: file.name,
-      filePath,
+      content,
       fileType: file.type,
       fileSize: file.size,
       category: category as never,
@@ -63,11 +51,6 @@ export async function deleteDocumentAction(documentId: string) {
   if (!doc || doc.patientId !== session.patientId) return { error: "Document not found." };
 
   await prisma.document.delete({ where: { id: documentId } });
-  try {
-    await unlink(path.join(process.cwd(), doc.filePath));
-  } catch {
-    // file may already be gone — non-fatal for the demo
-  }
 
   revalidatePath("/portal/documents");
   return { success: true };
