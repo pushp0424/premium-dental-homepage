@@ -52,6 +52,11 @@
 
   --animate-fade-up: fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-marquee-reverse: marquee-reverse 36s linear infinite;
+  --animate-blob-drift: blob-drift 18s ease-in-out infinite;
+  --animate-blob-drift-slow: blob-drift 26s ease-in-out infinite reverse;
+  --animate-bounce-y: bounce-y 2s ease-in-out infinite;
 
   @keyframes fade-up {
     from {
@@ -69,6 +74,43 @@
     }
     100% {
       box-shadow: 0 0 0 14px rgb(11 95 255 / 0);
+    }
+  }
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes marquee-reverse {
+    from {
+      transform: translateX(-50%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+  @keyframes blob-drift {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(4%, 6%) scale(1.08);
+    }
+    66% {
+      transform: translate(-3%, -4%) scale(0.96);
+    }
+  }
+  @keyframes bounce-y {
+    0%, 100% {
+      transform: translateY(0);
+      opacity: 0.4;
+    }
+    50% {
+      transform: translateY(8px);
+      opacity: 1;
     }
   }
 }
@@ -147,4 +189,44 @@ body {
 .scrollbar-thin::-webkit-scrollbar-thumb {
   background-color: var(--color-ink-300);
   border-radius: 999px;
+}
+
+/* fully hidden scrollbar, for drag/snap carousels */
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* subtle tactile grain overlay — layered on dark/gradient sections for a premium, non-flat feel */
+.grain-overlay {
+  position: relative;
+  isolation: isolate;
+}
+.grain-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/></svg>");
+  background-size: 160px 160px;
+}
+
+.mesh-gradient {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgb(11 95 255 / 0.16), transparent 45%),
+    radial-gradient(circle at 85% 15%, rgb(14 165 164 / 0.14), transparent 40%),
+    radial-gradient(circle at 50% 90%, rgb(161 98 7 / 0.07), transparent 45%);
+}
+
+.text-gradient-brand {
+  background: linear-gradient(100deg, var(--color-brand-600), var(--color-accent-500) 60%, var(--color-brand-500));
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
 }

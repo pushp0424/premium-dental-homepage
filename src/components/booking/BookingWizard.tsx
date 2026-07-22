@@ -98,7 +98,7 @@ export function BookingWizard({
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 lg:px-10 py-12">
+    <div className="max-w-2xl mx-auto px-6 lg:px-10 pt-32 pb-12">
       <div className="mb-10">
         <StepIndicator steps={STEP_LABELS} currentIndex={step} />
       </div>

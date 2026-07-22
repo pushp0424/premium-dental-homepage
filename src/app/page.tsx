@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 import { MotionRoot } from "@/components/MotionRoot";
 import { Navbar } from "@/components/marketing/Navbar";
 import { Hero } from "@/components/marketing/Hero";
-import { TrustBar } from "@/components/marketing/TrustBar";
+import { StatsBand } from "@/components/marketing/StatsBand";
 import { WhyChooseUs } from "@/components/marketing/WhyChooseUs";
 import { ServicesGrid } from "@/components/marketing/ServicesGrid";
 import { DoctorsGrid } from "@/components/marketing/DoctorsGrid";
@@ -14,7 +14,7 @@ import { Footer } from "@/components/marketing/Footer";
 
 export default async function Home() {
   const [services, doctors, locations] = await Promise.all([
-    prisma.service.findMany({ orderBy: { price: "desc" }, take: 6 }),
+    prisma.service.findMany({ orderBy: { price: "desc" }, take: 8 }),
     prisma.doctor.findMany({ orderBy: { yearsExperience: "desc" } }),
     prisma.location.findMany(),
   ]);
@@ -24,7 +24,7 @@ export default async function Home() {
       <Navbar />
       <main id="main-content" className="flex-1">
         <Hero />
-        <TrustBar />
+        <StatsBand />
         <WhyChooseUs />
         <ServicesGrid services={services} />
         <DoctorsGrid doctors={doctors} />

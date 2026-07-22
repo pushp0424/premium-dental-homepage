@@ -15,7 +15,7 @@ export default async function ManageAppointmentPage({
   return (
     <MotionRoot>
       <Navbar />
-      <main id="main-content" className="flex-1 bg-ink-50/50 py-14 px-6">
+      <main id="main-content" className="flex-1 bg-ink-50/50 pt-32 pb-14 px-6">
         <ManageAppointmentClient initialCode={params.code ?? ""} />
       </main>
       <Footer />
