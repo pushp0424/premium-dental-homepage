@@ -49,3 +49,7 @@ next-env.d.ts
 # local file uploads (demo storage)
 /storage/uploads
 
+# python bytecode cache (skill tooling)
+__pycache__/
+*.pyc
+
