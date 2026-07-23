@@ -22,9 +22,9 @@ export default function LoginPage() {
             <LoginForm />
           </Suspense>
 
-          <p className="mt-8 text-center text-sm text-ink-500">
+          <p className="mt-8 text-center text-sm text-ink-500 text-balance">
             New to Meridian Dental?{" "}
-            <Link href="/register" className="font-semibold text-brand-600 hover:text-brand-700">
+            <Link href="/register" className="font-semibold text-nowrap text-brand-600 hover:text-brand-700">
               Create a patient account
             </Link>
           </p>

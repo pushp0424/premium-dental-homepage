@@ -42,16 +42,16 @@ export function LoginForm() {
       <div className="grid grid-cols-1 gap-2.5">
         <form action={quickLoginPatientAction}>
           <Button type="submit" variant="outline" size="md" className="w-full justify-start">
-            <UserRound className="size-4.5 text-brand-600" />
-            Continue as demo patient
-            <span className="ml-auto text-xs font-normal text-ink-400">sarah.patient@demo.com</span>
+            <UserRound className="size-4.5 shrink-0 text-brand-600" />
+            <span className="shrink-0">Continue as demo patient</span>
+            <span className="ml-auto min-w-0 truncate text-xs font-normal text-ink-400">sarah.patient@demo.com</span>
           </Button>
         </form>
         <form action={quickLoginAdminAction}>
           <Button type="submit" variant="outline" size="md" className="w-full justify-start">
-            <Stethoscope className="size-4.5 text-brand-600" />
-            Continue as demo admin
-            <span className="ml-auto text-xs font-normal text-ink-400">admin@meridiandental.com</span>
+            <Stethoscope className="size-4.5 shrink-0 text-brand-600" />
+            <span className="shrink-0">Continue as demo admin</span>
+            <span className="ml-auto min-w-0 truncate text-xs font-normal text-ink-400">admin@meridiandental.com</span>
           </Button>
         </form>
       </div>
